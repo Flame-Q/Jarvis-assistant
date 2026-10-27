@@ -45,12 +45,7 @@ from jarvis.storage.repositories import (
     NotesRepository,
     TimerRepository,
 )
-
-BANNER = """
-+--------------------------------------------------------------+
-|   J A R V I S   -   голосовой ассистент (локальный, офлайн)   |
-+--------------------------------------------------------------+
-"""
+from jarvis.ui.console import EXIT_COMMANDS, HELP_COMMANDS, console_ui
 
 
 @dataclass
@@ -240,14 +235,14 @@ def main(argv: list[str] | None = None) -> int:
                     reconfigure(encoding="utf-8", errors="replace")
         except (AttributeError, OSError):  # pragma: no cover - redirected streams
             pass
-    print(BANNER)
+    console_ui.banner()
 
     services = build_services(config, root)
     _check_llm(services)
 
     if args.once:
         result = services.assistant.handle_text(args.once)
-        print(f"Джарвис: {result.text}")
+        console_ui.assistant(result.text, ok=result.ok)
         _wait_for_tts(services)
         _shutdown(services)
         return 0 if result.ok else 1
@@ -265,14 +260,14 @@ def main(argv: list[str] | None = None) -> int:
             services.voice = None
 
     status = "готов" if services.assistant.llm_available() else "без чата (Ollama недоступна)"
-    print(f"Статус: {status}. Модель: {config.llm.model}")
+    console_ui.info(f"Статус: {status}. Модель: {config.llm.model}")
     if services.voice is not None:
         manual = config.assistant.manual_hotkey
         button = "кнопку «Говорить»"
         if manual:
             button += f" ({manual})"
         if config.assistant.wake_word_enabled:
-            print(
+            console_ui.info(
                 "Голос: включён. Скажите «хей, Джарвис», нажмите "
                 f"{config.assistant.hotkey} или {button}."
             )
@@ -281,10 +276,16 @@ def main(argv: list[str] | None = None) -> int:
                 activation = f"Нажмите {manual} или кнопку «Говорить»."
             else:
                 activation = "Откройте трей и нажмите кнопку «Говорить»."
-            print(f"Голос: включён (wake word выключен). {activation}")
+            console_ui.info(f"Голос: включён (wake word выключен). {activation}")
     else:
-        print("Голос: выключен (текстовый режим).")
-    print("Напишите команду и нажмите Enter. Для выхода: выход или Ctrl+C.\n")
+        console_ui.info("Голос: выключен (текстовый режим).")
+
+    console_ui.commands(services.registry.all())
+    console_ui.hint(
+        "Введите команду или help/команды для списка навыков. "
+        "Выход: q, quit, exit, выход или Ctrl+C."
+    )
+    console_ui.console.print()
 
     if not args.no_greeting and services.tts.available:
         services.tts.speak("Джарвис на связи.")
@@ -299,25 +300,31 @@ def main(argv: list[str] | None = None) -> int:
             return run_tray(services, on_quit=lambda: _shutdown(services))
         except Exception as exc:
             logger.error("Tray is unavailable: {}", exc)
-            print(f"Трей недоступен: {exc}. Запускаю консольный режим.")
+            console_ui.error(f"Трей недоступен: {exc}. Запускаю консольный режим.")
 
     _warmup(services)
     try:
         while True:
             try:
-                line = input("Вы: ").strip()
+                line = console_ui.ask()
             except EOFError:
                 break
             if not line:
                 continue
-            if line.lower() in {"выход", "quit", "exit"}:
+            lowered = line.lower()
+            if lowered in EXIT_COMMANDS:
                 break
+            if lowered in HELP_COMMANDS:
+                console_ui.commands(services.registry.all())
+                continue
             result = services.assistant.handle_text(line)
             if result.text:
-                print(f"Джарвис: {result.text}\n")
+                console_ui.assistant(result.text, ok=result.ok)
+                console_ui.console.print()
     except KeyboardInterrupt:
-        print()
+        console_ui.console.print()
     finally:
+        console_ui.goodbye()
         if not args.no_greeting and services.tts.available:
             services.tts.speak("До встречи.")
         _wait_for_tts(services)

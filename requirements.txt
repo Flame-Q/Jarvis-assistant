@@ -28,11 +28,12 @@ psutil==7.2.2
 comtypes==1.4.17
 pycaw==20260927
 
-# --- core ---
+# --- core / console UI ---
 pydantic==2.14.1
 pydantic-settings==2.15.0
 loguru==0.7.3
 rapidfuzz==3.14.5
+rich==15.0.0
 tomli==2.5.0; python_version < "3.11"
 
 # --- GUI (P5) ---

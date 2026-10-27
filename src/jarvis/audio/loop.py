@@ -20,6 +20,7 @@ from jarvis.core.events import EventBus
 from jarvis.core.fsm import State
 from jarvis.providers.stt.base import STTProvider
 from jarvis.providers.tts.base import TTSProvider
+from jarvis.ui.console import console_ui
 from jarvis.ui.hotkeys import HotkeyManager
 
 
@@ -166,6 +167,7 @@ class VoiceLoop:
         self._manual_stop.clear()
         self._manual_recording.set()
         threading.Thread(target=self._manual_worker, name="voice-manual", daemon=True).start()
+        console_ui.listening()
         logger.info("Manual recording started")
         return True
 
@@ -248,6 +250,7 @@ class VoiceLoop:
             return
         beep(880, 70)
         fsm.transition(State.LISTENING)
+        console_ui.listening()
 
         audio = self._record_utterance()
         if not self._running or audio.size == 0:
@@ -284,7 +287,8 @@ class VoiceLoop:
         if not fsm.transition(State.TRANSCRIBING):
             fsm.force(State.TRANSCRIBING)
         try:
-            text = self._stt.transcribe(audio, 16000)
+            with console_ui.thinking():
+                text = self._stt.transcribe(audio, 16000)
         except ProviderError as exc:
             logger.error("STT error: {}", exc)
             self._tts.speak(str(exc))

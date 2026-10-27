@@ -45,7 +45,7 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph Presentation["Presentation"]
-        console["Консольный REPL"]
+        console["Rich-консоль\nбаннер · статусы · таблица"]
         tray["Трей и настройки\nPySide6"]
         control["ControlWindow\nкнопка «Говорить»"]
         hotkeys["HotkeyManager\nkeyboard"]

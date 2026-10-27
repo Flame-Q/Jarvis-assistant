@@ -21,7 +21,7 @@ Repository.
 | P1 | Каркас: конфиг, логирование, модели, EventBus, FSM, реестр, роутер, репозитории, CLI | `src/jarvis/core`, `storage`, `config.py`, `app.py` | unit-тесты ядра, mypy |
 | P2 | Аудио: микрофон, VAD, wake word, STT, TTS, голосовой цикл | `audio/`, `providers/stt`, `providers/tts` | синтетические WAV, замеры |
 | P3 | Локальная LLM, гибридная маршрутизация, tool calling, стриминг | `providers/llm`, `skills/chat.py`, `core/assistant.py` | ответ Ollama, тесты degraded |
-| P4 | Навыки ПК, погода, таймеры, громкость, скриншоты, заметки, питание, shell | `skills/`, `os_win/` | 74 теста, ручной чек-лист |
+| P4 | Навыки ПК, погода, таймеры, громкость, скриншоты, заметки, питание, shell | `skills/`, `os_win/` | 78 тестов, ручной чек-лист |
 | P5 | Трей, пульт push-to-talk, настройки, горячие клавиши, упаковка | `ui/`, `pyproject.toml`, `requirements.txt` | запуск трея, скриншот GUI |
 | P6 | Тестовая документация, UML, ADR, руководства, финальный QA | `docs/`, `README.md` | ruff, mypy, pytest, 92 % core |
 
@@ -62,6 +62,8 @@ UML: `docs/uml/` (use case, компоненты, классы, 3 последо
   Open-Meteo, таймеры/напоминания, громкость, скриншоты, время/дата, поиск,
   заметки, блокировка/выключение/перезагрузка, shell (выключен).
 - Подтверждения опасных действий, команда «стоп», «заверши работу».
+- Rich-консоль: Panel/Text-баннер, `[Слушаю...]`, спиннер `Думаю...`,
+  таблица зарегистрированных навыков, `help`/`команды`, выход `q`/`quit`/`exit`.
 - Трей, окно «Пульт микрофона», окно настроек с сохранением `config/config.toml`,
   история.
 - 10 UML-диаграмм, 7 ADR, требования, архитектура, тестирование, руководства.
@@ -73,7 +75,7 @@ UML: `docs/uml/` (use case, компоненты, классы, 3 последо
 ```text
 ruff check .            All checks passed!
 mypy src                Success: no issues found in 52 source files
-pytest -q               74 passed
+pytest -q               78 passed
 coverage jarvis.core    92 % (374 stmts, 29 miss)
 pip check               No broken requirements found
 ```
@@ -124,10 +126,8 @@ ollama pull qwen2.5:3b-instruct
 
 ```
 src/jarvis/   core, audio, providers, skills, os_win, storage, ui
-tests/        74 автотеста без микрофона и сети
+tests/        78 автотестов без микрофона и сети
 docs/         требования, архитектура, UML, ADR, тестирование, руководства
 scripts/      скачивание моделей, проверка wake word/TTS
 config/       пример конфигурации
 ```
-
-Лицензия MIT.

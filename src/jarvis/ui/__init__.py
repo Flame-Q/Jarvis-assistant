@@ -1,1 +1,1 @@
-"""Desktop presentation layer (PySide6 tray, control window, settings, hotkeys)."""
+"""Presentation layer: Rich console plus PySide6 tray, control window and settings."""

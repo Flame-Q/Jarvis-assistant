@@ -5,11 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "jarvis-assistant"
 version = "0.1.0"
-description = "Jarvis - voice assistant for Windows (course project, software design technologies)"
+description = "Jarvis - local offline voice assistant for Windows"
 requires-python = ">=3.10"
 readme = "README.md"
-license = { text = "MIT" }
-authors = [{ name = "Student" }]
+authors = [{ name = "Flame-Q" }]
 dependencies = [
     "numpy<2",
     "sounddevice",
@@ -20,6 +19,7 @@ dependencies = [
     "httpx",
     "openai>=1.0",
     "rapidfuzz",
+    "rich>=13.7",
     "psutil",
     "comtypes",
     "pycaw",

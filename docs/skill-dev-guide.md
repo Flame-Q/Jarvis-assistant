@@ -33,7 +33,7 @@ class Skill(Protocol):
 Создайте `src/jarvis/skills/disk_space.py`:
 
 ```python
-"""Disk space skill (course example)."""
+"""Disk space skill (example)."""
 
 from __future__ import annotations
 

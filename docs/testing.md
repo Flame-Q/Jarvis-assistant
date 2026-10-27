@@ -9,8 +9,8 @@
 
 | Уровень | Что проверяется | Инструмент | Кол-во |
 |---|---|---|---|
-| Модульные | FSM, роутер, реестр, извлечение слотов, репозитории, парсинг, аудио-буфер, push-to-talk, TTS-хелперы | pytest | 74 |
-| Интеграционные (в процессе) | `AssistantService` + фейковые LLM/TTS + SQLite in-memory: маршрутизация, подтверждения, degraded, стриминг | pytest | входят в 74 |
+| Модульные | FSM, роутер, реестр, извлечение слотов, репозитории, парсинг, аудио-буфер, push-to-talk, TTS-хелперы, Rich-консоль | pytest | 78 |
+| Интеграционные (в процессе) | `AssistantService` + фейковые LLM/TTS + SQLite in-memory: маршрутизация, подтверждения, degraded, стриминг | pytest | входят в 78 |
 | Ручные E2E | микрофон → wake word/кнопка → STT → действие → озвучка, трей, громкость, запуск программ | чек-лист §6 | 16 шагов |
 
 Автотесты **не требуют** микрофона, колонок, Ollama и интернета. Реальные
@@ -40,7 +40,8 @@
 | `tests/test_repositories.py` | 5 | история, журнал команд, заметки, таймеры, ограничения выборки |
 | `tests/test_skills_parsing.py` | 13 | слоты программ, таймера (включая срабатывание), громкости, погоды (падежи), времени, заметок, shell |
 | `tests/test_tts.py` | 4 | преобразование rate/volume для SAPI5, выбор русского голоса, сохранение голоса по умолчанию |
-| **Итого** | **74** | |
+| `tests/test_console.py` | 4 | Rich-баннер, таблица навыков, ответ ассистента, алиасы выхода |
+| **Итого** | **78** | |
 
 ### Фейки и изоляция
 
@@ -49,6 +50,8 @@
 - `FakeTTS` — складывает фразы в список, считает `stop()`, не трогает SAPI.
 - `test_tts` проверяет только чистые преобразования и выбор голоса на фейковом
   SAPI-токене; реальный динамик и COM не используются.
+- `test_console` пишет вывод Rich в `StringIO`, поэтому не зависит от TTY,
+  цвета терминала и ширины окна.
 - `StaticSkill` — минимальный навык с настраиваемым триггером и результатом.
 - `make_assistant()` — собирает фасад с SQLite `:memory:`, EventBus и FSM.
 - `test_audio` подменяет ONNX-модель объектом с `predict/reset`.
@@ -68,8 +71,9 @@ $ .venv\Scripts\python.exe -m mypy src
 Success: no issues found in 52 source files
 
 $ .venv\Scripts\python.exe -m pytest -q
-........................................................................ [100%]
-74 passed
+......................................................................   [92%]
+......                                                                   [100%]
+78 passed
 ```
 
 ### Покрытие `jarvis.core`
@@ -174,6 +178,7 @@ STT: «Открой дискорд и поставь таймер на 5 мин�
 - FR-2 — синтетический STT-замер + `scripts/tts_check.py` (генерация фразы).
 - FR-6 — `test_timer_parsing`, `test_timer_fires_and_speaks`, `test_plural_forms`.
 - FR-16 — `test_manual_voice.py`, E2E-пункт 16.
+- FR-17 — `test_console.py`, smoke `--text` с командами `help` и `q`.
 - FR-7 — `test_chat_response_is_streamed_by_sentences`.
 - FR-9 — `test_stop_stops_speech_without_llm`, `test_shutdown_command_sets_event`.
 - FR-10 — `test_confirmation_flow_yes`, `test_confirmation_flow_no`.
