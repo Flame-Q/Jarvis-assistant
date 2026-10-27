@@ -1,0 +1,37 @@
+%% Диаграмма развёртывания.
+%% Всё приложение — один Python-процесс в venv; Ollama — отдельный локальный сервис.
+%% Модели Whisper и openWakeWord кэшируются на диске и работают офлайн.
+%% SQLite, кэш приложений, скриншоты и логи лежат в data/ (git-ignored).
+%% Внешняя сеть нужна только для погоды и веб-поиска.
+flowchart TB
+    subgraph PC["Персональный компьютер, Windows 10/11"]
+        subgraph Python["Python 3.10 venv"]
+            App["python -m jarvis\n(Jarvis process)"]
+            DB[(data/jarvis.db)]
+            Files["data/apps.json\nscreenshots\njarvis.log"]
+        end
+        subgraph LocalAI["Локальные модели"]
+            Ollama["Ollama service\n127.0.0.1:11434"]
+            Qwen["qwen2.5:3b-instruct\nQ4_K_M"]
+            Whisper["Whisper small int8\nHF cache"]
+            Wake["hey_jarvis ONNX\nopenWakeWord cache"]
+        end
+        Mic[Микрофон]
+        Spk[Колонки]
+    end
+
+    Net[Интернет]
+    Meteo[Open-Meteo]
+    Browser[Браузер]
+
+    Mic --> App
+    App --> Spk
+    App --> DB
+    App --> Files
+    App -->|"HTTP /v1"| Ollama
+    Ollama --> Qwen
+    App --> Whisper
+    App --> Wake
+    App -.->|"только погода/поиск"| Net
+    Net --> Meteo
+    App --> Browser

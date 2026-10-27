@@ -1,0 +1,49 @@
+# Jarvis — проверенные версии зависимостей (Windows 10/11, Python 3.10.0, CPU).
+# Установка: .venv\Scripts\python.exe -m pip install -r requirements.txt
+# Строка -e . устанавливает сам пакет jarvis в editable-режиме,
+# чтобы работала команда python -m jarvis без правки PYTHONPATH.
+-e .
+
+# --- audio / wake word / STT ---
+numpy==1.26.4
+sounddevice==0.5.6
+webrtcvad-wheels==2.0.14.post1
+openwakeword==0.6.0
+onnxruntime==1.23.2
+faster-whisper==1.2.1
+
+# --- TTS ---
+pyttsx3==2.99
+pywin32==312
+
+# --- local LLM ---
+openai==3.37.0
+httpx==0.28.1
+
+# --- Windows integration ---
+pyautogui==0.9.54
+Pillow==12.3.0
+keyboard==0.13.5
+psutil==7.2.2
+comtypes==1.4.17
+pycaw==20260927
+
+# --- core ---
+pydantic==2.14.1
+pydantic-settings==2.15.0
+loguru==0.7.3
+rapidfuzz==3.14.5
+tomli==2.5.0; python_version < "3.11"
+
+# --- GUI (P5) ---
+PySide6==6.12.0
+
+# --- dev / QA ---
+pytest==9.1.1
+pytest-cov==7.1.0
+ruff==0.17.2
+mypy==2.4.0
+
+# --- optional online TTS (NOT installed by default, violates offline mode) ---
+# edge-tts
+# miniaudio

@@ -1,0 +1,125 @@
+%% Диаграмма классов ядра (core/ + skills/base.py + storage).
+%% AssistantService — фасад: принимает текст, управляет FSM и вызывает навык или чат.
+%% Skill — протокол Command: name, description, args_model, can_handle, extract_args, execute.
+%% SkillRegistry хранит навыки и генерирует JSON-схемы инструментов из pydantic-моделей.
+%% Репозитории скрывают SQL; LLM/TTS-провайдеры показаны как интерфейсы (Strategy/Adapter).
+classDiagram
+    class AssistantService {
+        -AssistantFSM fsm
+        -IntentRouter router
+        -SkillRegistry registry
+        -ChatSkill chat
+        -TTSProvider tts
+        -LLMProvider llm
+        -PendingAction pending
+        +handle_text(text) SkillResult
+        +llm_available() bool
+        +status() dict
+        -_dispatch(text) SkillResult
+        -_run_skill(match) SkillResult
+        -_execute(skill, args) SkillResult
+        -_llm_answer(text) SkillResult
+        -_stream_chat(text) SkillResult
+        -_handle_confirmation(text) SkillResult
+    }
+
+    class AssistantFSM {
+        -State state
+        +transition(target) bool
+        +force(target) None
+        +reset() None
+    }
+
+    class IntentRouter {
+        -SkillRegistry registry
+        -float threshold
+        +route(text) RouteResult
+    }
+
+    class SkillRegistry {
+        -dict skills
+        +register(skill, replace) None
+        +get(name) Skill
+        +all() list
+        +tool_schemas() list
+    }
+
+    class EventBus {
+        +subscribe(topic, handler) Callable
+        +publish(event_topic, payload) None
+    }
+
+    class Skill {
+        <<interface>>
+        +str name
+        +str description
+        +type args_model
+        +bool requires_confirmation
+        +can_handle(text) float
+        +extract_args(text) BaseModel
+        +execute(args) SkillResult
+    }
+
+    class BaseSkill {
+        +list triggers
+        +can_handle(text) float
+    }
+
+    class AppLauncherSkill
+    class WeatherSkill
+    class TimerSkill
+    class ControlSkill
+    class ChatSkill {
+        +answer(text) SkillResult
+        +stream(text) Iterator
+        +ask_with_tools(text, tools) LLMResponse
+    }
+
+    class SkillResult {
+        +bool ok
+        +str text
+        +bool speak
+        +dict data
+    }
+
+    class HistoryRepository {
+        +add_turn(role, text) Turn
+        +recent(limit) list
+    }
+
+    class NotesRepository
+    class TimerRepository
+    class CommandRepository
+    class TTSProvider {
+        <<interface>>
+        +speak(text) None
+        +stop() None
+    }
+    class LLMProvider {
+        <<interface>>
+        +health() bool
+        +chat(messages, tools) LLMResponse
+        +chat_stream(messages) Iterator
+    }
+
+    AssistantService --> AssistantFSM
+    AssistantService --> IntentRouter
+    AssistantService --> SkillRegistry
+    AssistantService --> ChatSkill
+    AssistantService --> TTSProvider
+    AssistantService --> LLMProvider
+    AssistantService --> EventBus
+    AssistantService --> HistoryRepository
+    AssistantService --> CommandRepository
+    IntentRouter --> SkillRegistry
+    SkillRegistry o-- Skill
+    BaseSkill ..|> Skill
+    AppLauncherSkill --|> BaseSkill
+    WeatherSkill --|> BaseSkill
+    TimerSkill --|> BaseSkill
+    ControlSkill --|> BaseSkill
+    ChatSkill ..> LLMProvider
+    TTSProvider <|.. Sapi5TTS
+    TTSProvider <|.. Pyttsx3TTS
+    LLMProvider <|.. OllamaProvider
+    Skill ..> SkillResult

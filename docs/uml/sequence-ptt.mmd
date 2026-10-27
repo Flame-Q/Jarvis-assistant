@@ -1,0 +1,32 @@
+%% Последовательность FR-16: push-to-talk кнопкой «Говорить».
+%% Первое нажатие запускает запись, второе — останавливает и запускает STT.
+%% Кнопка и Ctrl+Alt+Space вызывают один и тот же toggle_manual().
+%% Ответ озвучивается после обработки; wake word на время записи не читает микрофон.
+sequenceDiagram
+    autonumber
+    actor U as Пользователь
+    participant CW as ControlWindow
+    participant VL as VoiceLoop
+    participant Mic as MicrophoneStream
+    participant STT as WhisperSTT
+    participant A as AssistantService
+    participant T as Sapi5TTS
+
+    U->>CW: нажимает «Говорить»
+    CW->>VL: start_manual_recording()
+    VL->>VL: busy.acquire(), manual_recording.set()
+    VL->>Mic: drain()
+    VL->>U: beep
+    loop до второго нажатия / 60 с
+        Mic-->>VL: PCM 20 мс
+    end
+    U->>CW: нажимает «Остановить»
+    CW->>VL: stop_manual_recording()
+    VL->>VL: manual_stop.set()
+    VL->>STT: transcribe(audio)
+    STT-->>VL: текст вопроса
+    VL->>A: handle_text(text)
+    A->>T: speak(answer)
+    A-->>VL: SkillResult
+    VL->>VL: busy.release(), manual_recording.clear()
+    CW-->>U: «Готов. Нажмите и говорите.»

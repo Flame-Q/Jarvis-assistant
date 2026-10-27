@@ -1,0 +1,67 @@
+%% Диаграмма компонентов (C4 L2) в нотации UML.
+%% Показаны четыре слоя и направление зависимостей: presentation → application → domain.
+%% Infrastructure реализует контракты, объявленные в application/domain, и не зависит от UI.
+%% Навыки — компоненты Command, регистрируемые в SkillRegistry.
+%% Все Windows-вызовы сосредоточены в os_win, что соответствует NFR-8.
+flowchart TB
+    subgraph Presentation
+        Console[Console REPL]
+        Tray[Tray / Settings]
+        Control[ControlWindow\nPush-to-talk]
+        Hotkey[HotkeyManager]
+    end
+
+    subgraph Application
+        Assistant[AssistantService]
+        FSM[AssistantFSM]
+        Router[IntentRouter]
+        Registry[SkillRegistry]
+        Bus[EventBus]
+    end
+
+    subgraph Domain
+        Models[Models / Errors]
+    end
+
+    subgraph Infrastructure
+        Voice[VoiceLoop]
+        STT[WhisperSTT]
+        TTS[TTS Providers]
+        LLM[OllamaProvider]
+        Apps[AppsIndex]
+        DB[Repositories]
+        Config[Config]
+    end
+
+    subgraph Skills
+        Launcher[app_launcher]
+        Weather[weather]
+        Timer[timer]
+        Volume[volume]
+        Other[time_date, screenshot,\nsearch, notes, system, shell,\ncontrol]
+        Chat[chat]
+    end
+
+    Console --> Assistant
+    Tray --> Assistant
+    Tray --> Control
+    Control --> Voice
+    Hotkey --> Voice
+    Voice --> STT
+    Voice --> Assistant
+    Assistant --> FSM
+    Assistant --> Router
+    Router --> Registry
+    Registry --> Launcher
+    Registry --> Weather
+    Registry --> Timer
+    Registry --> Volume
+    Registry --> Other
+    Assistant --> Chat
+    Chat --> LLM
+    Assistant --> TTS
+    Assistant --> Bus
+    Assistant --> DB
+    Launcher --> Apps
+    Assistant --> Models
+    Config -.-> Assistant

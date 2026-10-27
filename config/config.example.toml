@@ -1,0 +1,66 @@
+# Copy this file to config/config.toml to override defaults.
+# Every key is optional; missing keys fall back to the built-in defaults.
+
+[assistant]
+name = "Джарвис"
+wake_word = "hey_jarvis"
+wake_word_enabled = true   # false = только кнопка/горячая клавиша
+sensitivity = 0.4          # 0..1, lower = more sensitive
+hotkey = "ctrl+alt+j"      # автоматическая запись до тишины
+manual_hotkey = "ctrl+alt+space"  # старт/стоп записи по кнопке
+language = "ru"
+data_dir = "data"
+
+[stt]
+model = "small"            # tiny | base | small | medium
+compute_type = "int8"
+device = "cpu"
+language = "ru"
+beam_size = 1
+vad_silence_ms = 800
+max_utterance_s = 12.0
+manual_max_utterance_s = 60.0  # аварийный лимит push-to-talk
+
+[tts]
+provider = "sapi5"         # sapi5 | pyttsx3 (legacy) | edge
+voice = "ru"               # substring matched against the voice id
+rate = 180
+volume = 1.0
+
+[llm]
+provider = "ollama"
+base_url = "http://127.0.0.1:11434"
+model = "qwen2.5:3b-instruct"
+num_ctx = 4096
+keep_alive = "30m"
+temperature_chat = 0.7
+temperature_tools = 0.2
+history_turns = 12
+timeout_s = 60.0
+
+[weather]
+default_city = "Москва"
+cache_ttl_s = 600
+
+[skills]
+shell_enabled = false
+
+[skills.aliases]
+"дискорд" = "discord://"
+"хром" = "Google Chrome"
+"браузер" = "Google Chrome"
+"стим" = "steam://open/main"
+"телеграм" = "Telegram"
+"блокнот" = "notepad"
+"калькулятор" = "calc"
+"проводник" = "explorer"
+"ютуб" = "https://www.youtube.com"
+"youtube" = "https://www.youtube.com"
+
+[ui]
+tray = true
+theme = "dark"
+
+[logging]
+level = "INFO"
+file = "data/jarvis.log"

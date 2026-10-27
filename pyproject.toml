@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jarvis-assistant"
+version = "0.1.0"
+description = "Jarvis - voice assistant for Windows (course project, software design technologies)"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Student" }]
+dependencies = [
+    "numpy<2",
+    "sounddevice",
+    "webrtcvad-wheels",
+    "pydantic>=2",
+    "pydantic-settings",
+    "loguru",
+    "httpx",
+    "openai>=1.0",
+    "rapidfuzz",
+    "psutil",
+    "comtypes",
+    "pycaw",
+    "pyttsx3",
+    "pyautogui",
+    "Pillow",
+    "pywin32",
+    "keyboard",
+    "faster-whisper",
+    "openwakeword",
+    "onnxruntime",
+    "tomli; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6"]
+edge = ["edge-tts", "miniaudio"]
+dev = ["pytest", "pytest-cov", "ruff", "mypy"]
+
+[project.scripts]
+jarvis = "jarvis.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
+
+[tool.mypy]
+python_version = "3.10"
+mypy_path = "src"
+packages = ["jarvis"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+exclude = ["src/jarvis/ui/"]
+
+[[tool.mypy.overrides]]
+module = ["jarvis.core.*", "jarvis.skills.base", "jarvis.storage.*"]
+disallow_untyped_defs = true
+
+[tool.coverage.run]
+source = ["jarvis.core"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

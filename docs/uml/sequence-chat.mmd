@@ -1,0 +1,35 @@
+%% Последовательность UC-2: чат с локальной LLM.
+%% Перед вызовом проверяется health Ollama (кэш 15 с); при недоступности — degraded-ответ.
+%% Короткие командные фразы идут через tool calling, обычные вопросы — через стриминг.
+%% При стриминге ChatSkill накапливает токены и отдаёт готовые предложения в TTS.
+%% История сохраняется в SQLite; в контекст попадают последние 12 реплик.
+sequenceDiagram
+    autonumber
+    actor U as Пользователь
+    participant A as AssistantService
+    participant C as ChatSkill
+    participant O as OllamaProvider
+    participant H as HistoryRepository
+    participant T as TTS
+
+    U->>A: «объясни, что такое инкапсуляция»
+    A->>H: add_turn("user", text)
+    A->>O: health() (TTL 15 c)
+    alt Ollama недоступна
+        A->>T: «Локальная модель недоступна»
+    else обычный вопрос
+        A->>C: stream(text)
+        C->>H: recent(12)
+        C->>O: chat_stream(messages)
+        loop токены
+            O-->>C: delta
+            C-->>A: предложение
+            A->>T: speak(предложение)
+        end
+        A->>H: add_turn("assistant", answer)
+    else команда без правила
+        A->>C: ask_with_tools(text, schemas)
+        C->>O: chat(messages, tools)
+        O-->>A: tool_calls / text
+        A->>A: validate(args), confirm?
+    end

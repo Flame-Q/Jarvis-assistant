@@ -1,0 +1,32 @@
+%% ER-диаграмма SQLite (data/jarvis.db).
+%% turns — история диалога, commands — журнал выполненных навыков,
+%% notes — заметки и дела, timers — активные и сработавшие таймеры.
+%% Таблицы независимы; связи не нужны, потому что записи создаются по времени.
+%% Индексы: turns.created_at, notes.done, timers.due_at (см. storage/db.py).
+%% Схема создаётся идемпотентно при старте (CREATE TABLE IF NOT EXISTS).
+erDiagram
+    TURNS {
+        INTEGER id PK
+        TEXT role
+        TEXT text
+        REAL created_at
+    }
+    COMMANDS {
+        INTEGER id PK
+        TEXT intent
+        TEXT args_json
+        TEXT status
+        REAL created_at
+    }
+    NOTES {
+        INTEGER id PK
+        TEXT text
+        INTEGER done
+        REAL created_at
+    }
+    TIMERS {
+        INTEGER id PK
+        TEXT text
+        REAL due_at
+        INTEGER fired
+    }

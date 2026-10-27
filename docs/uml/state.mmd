@@ -1,0 +1,25 @@
+%% Конечный автомат ассистента (State pattern).
+%% Штатный путь: IDLE → ACTIVATED → LISTENING → TRANSCRIBING → ROUTING →
+%% EXECUTING или THINKING → SPEAKING → IDLE.
+%% ERROR и MUTED — особые состояния; из ERROR разрешён только возврат в IDLE или MUTED.
+%% Недопустимые переходы отклоняются с предупреждением в лог, force() — только для восстановления.
+%% Таблица переходов в коде: core/fsm.py, ALLOWED.
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> ACTIVATED: wake word / hotkey
+    ACTIVATED --> LISTENING: захват микрофона
+    LISTENING --> TRANSCRIBING: конец фразы (VAD)
+    TRANSCRIBING --> ROUTING: текст получен
+    ROUTING --> EXECUTING: правило или tool call
+    ROUTING --> THINKING: вопрос к LLM
+    ROUTING --> SPEAKING: подтверждение
+    EXECUTING --> SPEAKING: результат навыка
+    THINKING --> SPEAKING: ответ LLM
+    THINKING --> EXECUTING: tool call
+    SPEAKING --> IDLE: речь поставлена в очередь
+    IDLE --> MUTED: пользователь отключил голос
+    MUTED --> IDLE: включение
+    IDLE --> ERROR: сбой
+    ERROR --> IDLE: восстановление
+    SPEAKING --> IDLE: завершение
+    IDLE --> [*]

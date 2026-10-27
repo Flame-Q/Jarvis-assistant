@@ -1,0 +1,32 @@
+%% Последовательность UC-1: голосовая команда управления ПК.
+%% Wake word детектируется на 80-мс окнах, затем VoiceLoop записывает фразу до 800 мс тишины.
+%% STT возвращает текст, маршрутизатор выбирает навык, навык выполняет действие.
+%% Ответ ставится в очередь TTS; состояние возвращается в IDLE.
+%% Во время речи микрофон игнорируется, чтобы не было эха.
+sequenceDiagram
+    autonumber
+    actor U as Пользователь
+    participant Mic as MicrophoneStream
+    participant WW as WakeWordDetector
+    participant VL as VoiceLoop
+    participant STT as WhisperSTT
+    participant A as AssistantService
+    participant R as IntentRouter
+    participant S as Skill
+    participant T as Sapi5TTS
+
+    U->>Mic: «Хей, Джарвис»
+    Mic->>WW: кадры 20 мс
+    WW-->>VL: score >= threshold
+    VL->>Mic: drain + запись
+    Mic-->>VL: PCM int16 + VAD
+    VL->>STT: transcribe(audio)
+    STT-->>VL: «открой дискорд»
+    VL->>A: handle_text(text)
+    A->>R: route(text)
+    R-->>A: AppLauncherSkill(args)
+    A->>S: execute(args)
+    S-->>A: SkillResult(ok, text)
+    A->>T: speak(text)
+    A-->>VL: SkillResult
+    Note over A: FSM: ROUTING → EXECUTING → SPEAKING → IDLE
